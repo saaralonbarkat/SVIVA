@@ -321,7 +321,7 @@ mutate(TRUST_air_q1 =  SVIVA2_raw$Q8.5+
   #IMC
   mutate(IMC_item = paste0(SVIVA2_raw$Q42.5_TEXT,
                            SVIVA2_raw$Q20.5_TEXT,
-                           SVIVA2_raw$Q21.5_TEXT,
+                           #SVIVA2_raw$Q21.5_TEXT,
                            SVIVA2_raw$Q22.10_TEXT,
                            SVIVA2_raw$Q23.10_TEXT)) %>%
   mutate(IMC = if_else(str_detect(IMC_item, "9")==TRUE,1,0)) %>%

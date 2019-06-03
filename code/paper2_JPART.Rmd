@@ -14,8 +14,8 @@ output:
     toc: yes
   word_document: default
 link-citations: yes
-bibliography: phd_paper_2.bib
-csl: ajps.csl
+bibliography: https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/code/phd_paper_2.bib
+csl: https://github.com/saaralonbarkat/SVIVA_2018/blob/master/code/ajps.csl
 urlcolor: blue
 ---
 
@@ -223,7 +223,9 @@ The survey experiment was conducted online using Qualtrics Survey Software. The 
 ## *Operationalization of variables*
 
 ```{r, echo=FALSE, warning=FALSE, message=F}
-alpha_air_trust = psych::alpha(select(SVIVA2_01, TRUST_air_q1,
+library(psych)
+
+alpha_air_trust = alpha(select(SVIVA2_01, TRUST_air_q1,
                                TRUST_air_q2,
                                TRUST_air_q3,
                                TRUST_air_q4,
