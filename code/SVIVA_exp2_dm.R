@@ -62,20 +62,20 @@ SVIVA2_00 = SVIVA2_00 %>%
   
   #conditions####
 ### relevance
-mutate(RELEVANCE_exp = if_else(SVIVA2_raw$DO.BR.FL_346=="Relevance_treatment",1,0))%>%
+mutate(RELEVANCE_exp = if_else(SVIVA2_raw$"DO-BR-FL_346"=="Relevance_treatment",1,0))%>%
   ###symbol
-  mutate(SYMBOL = Recode(SVIVA2_raw$DO.BR.FL_214,
+  mutate(SYMBOL = Recode(SVIVA2_raw$"DO-BR-FL_214",
                          "'POLICY PROGRAMS intro_control'=0;
                          'POLICY PROGRAMS intro_placebo'=1;
                          'POLICY PROGRAMS intro_symbol'=2"))%>%
   mutate(SYMBOL_bi = as.integer(Recode(SYMBOL,"1=0;2=1"))) %>% 
   ###policy order
-  mutate(t1 = paste(SVIVA2_raw$DO.BR.FL_269,
-                    SVIVA2_raw$DO.BR.FL_273,
-                    SVIVA2_raw$DO.BR.FL_291,
-                    SVIVA2_raw$DO.BR.FL_365,
-                    SVIVA2_raw$DO.BR.FL_375,
-                    SVIVA2_raw$DO.BR.FL_385)) #%>% 
+  mutate(t1 = paste(SVIVA2_raw$"DO-BR-FL_269",
+                    SVIVA2_raw$"DO-BR-FL_273",
+                    SVIVA2_raw$"DO-BR-FL_291",
+                    SVIVA2_raw$"DO-BR-FL_365",
+                    SVIVA2_raw$"DO-BR-FL_375",
+                    SVIVA2_raw$"DO-BR-FL_385")) #%>% 
 
 SVIVA2_00 = SVIVA2_00 %>% 
   mutate(AIR_order = if_else(str_detect(SVIVA2_00$t1, "air")==TRUE,1,2))%>%

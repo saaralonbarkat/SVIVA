@@ -23,11 +23,9 @@ urlcolor: blue
 
 Last edited at `r Sys.Date()`.[^footnote_scripts]
 
-[^footnote_scripts]: Original R scripts available at:  https://github.com/saaralonbarkat/symbols_and_information
-
 
 ```{r , include=FALSE, echo=FALSE}
-source("C:/SAAR/UNIVERSITY/R/SVIVA/code/experiment 2/SVIVA_exp2_dm_03.R")
+source("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/code/SVIVA_exp2_dm.R")
 
 SVIVA2_01_haifa = filter(SVIVA2_01,AREA==1)
 SVIVA2_01_center = filter(SVIVA2_01,AREA==0)
