@@ -500,7 +500,7 @@ mutate(RECOGNIZE_waste_real = SVIVA2_raw$Q25.6+
 ####Datasets#####
 
 SVIVA2_01 = SVIVA2_00 %>%
-  distinct(IP,.keep_all=TRUE) %>% #exclude double IP
+  #distinct(IP,.keep_all=TRUE) %>% #exclude double IP
   filter(!(AGE %in% 1:17),
          IMC==1,
          TIMER_total>=3,TIMER_total<=30,  
