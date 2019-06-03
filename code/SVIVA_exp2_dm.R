@@ -12,8 +12,8 @@ library(lubridate)
 
 
 #loading raw data CSV file
-SVIVA2_raw_00 <- read.csv("C:/SAAR/UNIVERSITY/R/SVIVA/data/experiment 2 01-2018/SVIVA_exp2.csv")
-CITY_00 <- read.csv("C:/SAAR/UNIVERSITY/R/SVIVA/data/experiment 2 01-2018/CITY.csv")
+SVIVA2_raw_00 <- read_csv("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/data/SVIVA_exp2.csv")
+CITY_00 <- read_csv("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/data/CITY.csv")
 
 SVIVA2_raw <- SVIVA2_raw_00 %>% filter(V10==1)
 CITY <- CITY_00 %>% filter(V10==1)
@@ -563,9 +563,7 @@ SVIVA2_01_comb = SVIVA2_01 %>%
          RECOGNIZE_campaign = ifelse(policy=="TRUST_air_INDEX",RECOGNIZE_air_real,RECOGNIZE_waste_real))
 
 
-save.image("C:/SAAR/UNIVERSITY/R/SVIVA/data/experiment 2 01-2018/SVIVA_R_ENV.RData")
 
-       
        
        
        
