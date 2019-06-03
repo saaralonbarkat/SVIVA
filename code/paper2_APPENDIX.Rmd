@@ -27,10 +27,10 @@ Last edited at `r Sys.Date()`.
 
 
 ```{r , include=FALSE, echo=FALSE}
-source("C:/SAAR/UNIVERSITY/R/SVIVA/code/experiment 2/SVIVA_exp2_dm_03.R")
+source("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/code/SVIVA_exp2_dm.R")
 
-SVIVA1_01 = read.csv("C:/SAAR/UNIVERSITY/R/SVIVA/data/experiment 2 01-2018/SVIVA1_01.csv")
-CELEBS_00 = read.csv("C:/SAAR/UNIVERSITY/R/SVIVA/data/experiment 2 01-2018/CELEBS.csv")
+SVIVA1_01 = read_csv("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/data/SVIVA1_01.csv") 
+CELEBS_00 = read_csv("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/data/SVIVA1_01.csv")
 ```
 
 ```{r , include=FALSE, echo=FALSE}
