@@ -24,13 +24,6 @@ urlcolor: blue
 Last edited at `r Sys.Date()`.[^footnote_scripts]
 
 
-```{r , include=FALSE, echo=FALSE}
-source("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/code/SVIVA_exp2_dm.R")
-
-SVIVA2_01_haifa = filter(SVIVA2_01,AREA==1)
-SVIVA2_01_center = filter(SVIVA2_01,AREA==0)
-```
-
 ```{r silent-packages, echo = FALSE, eval = TRUE, message=FALSE, include = FALSE}
 library(knitr)
 library(tidyverse)
@@ -39,6 +32,73 @@ library(car)
 library(broom)
 library(kableExtra)
 ```
+
+```{r , include=FALSE, echo=FALSE}
+source("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/code/SVIVA_exp2_dm.R")
+
+SVIVA2_01 <- read_csv("https://raw.githubusercontent.com/saaralonbarkat/SVIVA_2018/master/data/SVIVA2_01.csv")
+
+SVIVA2_01 <- SVIVA2_01 %>% 
+  mutate(ID = 1:nrow(SVIVA2_01))
+
+SVIVA2_01_comb = SVIVA2_01 %>%
+  dplyr::select(ID,AREA,AREA_names,
+      RELEVANCE_exp,RELEVANCE_exp_n,
+      SYMBOL,SYMBOL_n,
+      INFORMATION_air,INFORMATION_air_n,
+      INFORMATION_waste,INFORMATION_waste_n,
+      TRUST_air_INDEX,
+      TRUST_waste_INDEX,
+      ELABORATION_air_time_log,
+      ELABORATION_waste_time_log,
+      ELABORATION_air_time,
+      ELABORATION_waste_time,
+      MEMORY_air_score,
+      MEMORY_waste_score,
+      GOV_TRUST,
+      GENDER,
+      AIR_order,
+      WASTE_order,
+      IDEOLOGY,
+      INCOME,
+      EDUCATION,
+      RECOGNIZE_SVIVA_logo,
+      RECOGNIZE_air_real,
+      RECOGNIZE_waste_real,
+      RELEVANCE_air_obs,
+      RELEVANCE_waste_obs,
+      ENVIRONMENT_INTEREST,
+      ENVIRONMENT_FOLLOW,
+      CHILDREN,
+      CHILDREN_young) %>% 
+  gather(key=policy,value=trust,TRUST_air_INDEX,TRUST_waste_INDEX) %>% 
+  mutate(INFORMATION = ifelse(policy=="TRUST_air_INDEX",INFORMATION_air,
+                              INFORMATION_waste),
+         INFORMATION_n = ifelse(policy=="TRUST_air_INDEX",INFORMATION_air_n,
+                                INFORMATION_waste_n),
+         ELABORATION_time_log = ifelse(policy=="TRUST_air_INDEX",ELABORATION_air_time_log,
+                                       ELABORATION_waste_time_log),
+         MEMORY_score = ifelse(policy=="TRUST_air_INDEX",MEMORY_air_score,
+                               MEMORY_waste_score),
+         ELABORATION_time = ifelse(policy=="TRUST_air_INDEX",RELEVANCE_air_obs,
+                                   RELEVANCE_waste_obs),
+         RELEVANCE_obs = ifelse(policy=="TRUST_air_INDEX",ELABORATION_air_time,
+                                ELABORATION_waste_time)) %>% 
+  mutate(TRUST_air_INDEX = ifelse(policy=="TRUST_air_INDEX",trust,NA),
+         TRUST_waste_INDEX = ifelse(policy=="TRUST_waste_INDEX",trust,NA),
+         INFORMATION_weak = Recode(INFORMATION,"0=1;1=0"),
+         AREA_center = Recode(AREA,"0=1;1=0"),
+         SYMBOL_t = factor(Recode(SYMBOL,"1=2;2=1")),
+         SYMBOL_t.r = factor(Recode(SYMBOL,"0=2;2=1;1=0")),
+         SYMBOL_t.r_2 = factor(Recode(SYMBOL,"0=2;2=0")),
+         ORDER = ifelse(policy=="TRUST_air_INDEX",AIR_order,WASTE_order),
+         RECOGNIZE_campaign = ifelse(policy=="TRUST_air_INDEX",RECOGNIZE_air_real,RECOGNIZE_waste_real))
+
+
+SVIVA2_01_haifa = filter(SVIVA2_01,AREA==1)
+SVIVA2_01_center = filter(SVIVA2_01,AREA==0)
+```
+
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 N_raw = nrow(SVIVA2_raw_00)
@@ -277,7 +337,7 @@ I now turn to analyzing the experimental results.[^footnote_replication_material
 
 ## *The interaction between symbols and information*
 
-According to the first hypothesis, I expect that the real symbols condition will have a positive main effect on subjects' trust in the policy plans. According to my second hypothesis, I expect a positive interaction between the real symbols and weak policy plan. Namely, the effect of the real symbols is expected to be greater among those subjects who were assigned to the weak policy. In **Table 1**, I test these two hypotheses via regression analyses. To account for the multilevel structure of the data, I use GLS regressions with random intercept at the subject level via `lme4` R package (ICC1 = `r multilevel::ICC1(aov(trust~as.factor(IP),data=SVIVA2_01_comb))%>%round(2)`, ICC2 = `r multilevel::ICC2(aov(trust~as.factor(IP),data=SVIVA2_01_comb))%>%round(2)`). In Model 1 I regress trust in policy on the symbols manipulation. Thereafter, in Models 2 and 3, I add the information manipulation, and the interaction between them. The reference category for the symbols manipulation is the no-symbols condition.
+According to the first hypothesis, I expect that the real symbols condition will have a positive main effect on subjects' trust in the policy plans. According to my second hypothesis, I expect a positive interaction between the real symbols and weak policy plan. Namely, the effect of the real symbols is expected to be greater among those subjects who were assigned to the weak policy. In **Table 1**, I test these two hypotheses via regression analyses. To account for the multilevel structure of the data, I use GLS regressions with random intercept at the subject level via `lme4` R package (ICC1 = `r multilevel::ICC1(aov(trust~as.factor(ID),data=SVIVA2_01_comb))%>%round(2)`, ICC2 = `r multilevel::ICC2(aov(trust~as.factor(ID),data=SVIVA2_01_comb))%>%round(2)`). In Model 1 I regress trust in policy on the symbols manipulation. Thereafter, in Models 2 and 3, I add the information manipulation, and the interaction between them. The reference category for the symbols manipulation is the no-symbols condition.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
 x_realsymbol = filter(SVIVA2_01_comb,SYMBOL==2)%>%summarise(mean(trust))%>%max()
@@ -298,9 +358,9 @@ sd_trust_delta = SVIVA2_01%>%summarise(sd(WITHIN_DELTA))%>%max()
 ```{r,results="asis",echo=FALSE,warning=FALSE,message=FALSE}
 library(lme4)
 
-mod_1.1 = lmer(trust~SYMBOL_t+(1|IP),data=SVIVA2_01_comb)
-mod_1.2 = lmer(trust~SYMBOL_t+INFORMATION_weak+(1|IP),data=SVIVA2_01_comb)
-mod_1.3 = lmer(trust~SYMBOL_t*INFORMATION_weak+(1|IP),data=SVIVA2_01_comb)
+mod_1.1 = lmer(trust~SYMBOL_t+(1|ID),data=SVIVA2_01_comb)
+mod_1.2 = lmer(trust~SYMBOL_t+INFORMATION_weak+(1|ID),data=SVIVA2_01_comb)
+mod_1.3 = lmer(trust~SYMBOL_t*INFORMATION_weak+(1|ID),data=SVIVA2_01_comb)
 
 stargazer(mod_1.1,mod_1.2,mod_1.3,
           type="html",
@@ -317,16 +377,16 @@ stargazer(mod_1.1,mod_1.2,mod_1.3,
           notes = "*Notes*: Table entries are non-standardized random-effect GLS regression coefficients, clustered at the subject level. Standard errors are in parentheses and p-values (two tailed) are reported. The reference category for the symbols manipulation conditions is the control no-symbols.",
           notes.append = FALSE)
 
-mod_1.1.r_1 = lmer(trust~SYMBOL_t.r+(1|IP),data=SVIVA2_01_comb)
-mod_1.2.r_1 = lmer(trust~SYMBOL_t.r+INFORMATION_weak+(1|IP),data=SVIVA2_01_comb)
-mod_1.3.r_1 = lmer(trust~SYMBOL_t.r*INFORMATION_weak+(1|IP),data=SVIVA2_01_comb)
+mod_1.1.r_1 = lmer(trust~SYMBOL_t.r+(1|ID),data=SVIVA2_01_comb)
+mod_1.2.r_1 = lmer(trust~SYMBOL_t.r+INFORMATION_weak+(1|ID),data=SVIVA2_01_comb)
+mod_1.3.r_1 = lmer(trust~SYMBOL_t.r*INFORMATION_weak+(1|ID),data=SVIVA2_01_comb)
 
 
-mod_1.3.r_2 = lmer(trust~SYMBOL_t*INFORMATION+(1|IP),data=SVIVA2_01_comb)
+mod_1.3.r_2 = lmer(trust~SYMBOL_t*INFORMATION+(1|ID),data=SVIVA2_01_comb)
 
-mod_1.3.r_3 = lmer(trust~SYMBOL_t.r*INFORMATION+(1|IP),data=SVIVA2_01_comb)
+mod_1.3.r_3 = lmer(trust~SYMBOL_t.r*INFORMATION+(1|ID),data=SVIVA2_01_comb)
 
-mod_1.3.r_4 = lmer(trust~SYMBOL_t.r_2*INFORMATION_weak+(1|IP),data=SVIVA2_01_comb)
+mod_1.3.r_4 = lmer(trust~SYMBOL_t.r_2*INFORMATION_weak+(1|ID),data=SVIVA2_01_comb)
 
 ```
 
@@ -432,8 +492,8 @@ In **Table 2**, I test the effects of the real symbols on the elaboration measur
 **Table 2: Regression analyses – the effect of symbols on elaboration**
 
 ```{r,results="asis",echo=FALSE,warning=FALSE,message=FALSE}
-mod_2.1 = lmer(ELABORATION_time_log~SYMBOL_t+(1|IP),data=SVIVA2_01_comb)
-mod_2.2 = lmer(ELABORATION_time_log~SYMBOL_t+INFORMATION_weak+(1|IP),data=SVIVA2_01_comb)
+mod_2.1 = lmer(ELABORATION_time_log~SYMBOL_t+(1|ID),data=SVIVA2_01_comb)
+mod_2.2 = lmer(ELABORATION_time_log~SYMBOL_t+INFORMATION_weak+(1|ID),data=SVIVA2_01_comb)
 mod_2.3 = lm(MEMORY_score~SYMBOL_t,data=SVIVA2_01_comb)
 mod_2.4 = lm(MEMORY_score~SYMBOL_t+INFORMATION_weak,data=SVIVA2_01_comb)
 
@@ -450,7 +510,7 @@ stargazer(mod_2.1,mod_2.2,mod_2.3,mod_2.4,
           notes = "*Notes*: Table entries are non-standardized regression coefficients. Standard errors are in parentheses and p-values (two tailed) are displayed. The reference category for the symbols manipulation conditions is the control no-symbols.",
           notes.append = FALSE)
 
-mod_2.1.r_1 = lmer(ELABORATION_time~SYMBOL_t.r+(1|IP),data=SVIVA2_01_comb)
+mod_2.1.r_1 = lmer(ELABORATION_time~SYMBOL_t.r+(1|ID),data=SVIVA2_01_comb)
 
 mod_2.3.r_1 = lm(MEMORY_score~SYMBOL_t.r,data=SVIVA2_01_comb)
 ```
