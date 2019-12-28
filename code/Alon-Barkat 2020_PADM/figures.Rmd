@@ -1,0 +1,236 @@
+---
+title: "Untitled"
+author: "Saar Alon-Barkat"
+date: "6/13/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r silent-packages}
+library(knitr)
+library(tidyverse)
+library(stargazer)
+library(car)
+library(broom)
+library(kableExtra)
+library(ggthemes)
+library(lmtest)
+library(sandwich)
+library(ggpubr)
+library(effsize)
+library(emmeans)
+```
+
+## Figure 1
+
+`r figure.x=figure.x+1`**Figure `r figure.x`: Perceived personal relevance of policy issues across areas**
+
+```{r, fig.width=8,fig.height=4}
+p1 <- SVIVA2_01 %>%
+  select(AREA_names,
+         RELEVANCE_air_obs,
+         RELEVANCE_waste_obs) %>% 
+  gather(key = policy, value = relevance, -AREA_names) %>%
+  mutate(policy = Recode(policy,"'RELEVANCE_air_obs'='Haifa Bay air-pollution policy';'RELEVANCE_waste_obs'='Recycling policy'")) %>% 
+ggplot(aes(AREA_names,relevance))+ 
+  theme_tufte()+
+  geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.96),
+               width=0.05,size=0.5) + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6)+
+  facet_grid(~policy)+
+  xlab("")+
+  scale_y_continuous(name = "Perceived personal relevance",limits=c(1,7),breaks = seq(1,7,by=1))
+
+ggsave("Figure 1.tiff",p1,dpi=300,height = 3,width = 5)
+```
+<font size="0.5">
+
+*Note*: Error bars represent 95% confidence intervals.
+
+</font>
+
+<br><br>
+
+## Figure 2
+
+```{r, fig.width=8, fig.height=4}
+p1 <- SVIVA2_01_comb %>%
+ggplot(aes(SYMBOL_n,TRUST_air_INDEX))+ 
+  theme_tufte()+
+  geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.96),
+               width=0.05,size=0.5) + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6)+
+  stat_summary(fun.y = mean, geom = "line", size=0.6, aes(group = 1))+
+  scale_x_discrete(name = "",labels = c("No symbols","Fake symbols","Real symbols"))+
+  scale_y_continuous(name = "Trust in Haifa Bay air-pollution policy",limits=c(1,7),breaks = seq(1,7,by=1))+
+  ggtitle("Symbols")
+
+p2 <- SVIVA2_01_comb %>%
+ggplot(aes(factor(INFORMATION_weak),TRUST_air_INDEX))+ 
+  theme_tufte()+
+  geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.96),
+               width=0.05,size=0.5) + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6)+
+  stat_summary(fun.y = mean, geom = "line", size=0.6, aes(group = 1))+
+  scale_x_discrete(name = "",labels = c("Strong policy","Weak policy"))+
+  scale_y_continuous(name = "",limits=c(1,7),breaks = seq(1,7,by=1))+
+  ggtitle("Information")
+
+p3 <- SVIVA2_01_comb %>%
+ggplot(aes(factor(AREA_center),TRUST_air_INDEX))+ 
+  theme_tufte()+
+  geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.96),
+               width=0.05,size=0.5) + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6)+
+  stat_summary(fun.y = mean, geom = "line", size=0.6, aes(group = 1))+
+  scale_x_discrete(name = "",labels = c("Haifa Bay","Center"))+
+  scale_y_continuous(name = "",limits=c(1,7),breaks = seq(1,7,by=1))+
+  ggtitle("Areas")
+
+p4 <- ggarrange(p1,p2,p3,
+          ncol = 3,nrow = 1,
+          widths = c(3,2,2))
+
+ggsave("Figure 2.tiff",p4,dpi=300,height = 3,width = 8)
+```
+<font size="0.5">
+
+*Note*: Error bars represent 95% confidence intervals.
+
+</font>
+
+<br><br>
+
+## Figure 3
+
+```{r, fig.width=8}
+p1 <- SVIVA2_01_comb %>%
+  filter(policy=="TRUST_air_INDEX") %>% 
+ggplot(aes(factor(SYMBOL_n),trust,shape=factor(AREA_names)))+ 
+  theme_tufte()+
+  #geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.96),
+               width=0.1,size=0.5,position=position_dodge(0.1),color="gray70") + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6,position=position_dodge(0.1))+
+  stat_summary(fun.y = mean, geom = "line", size=0.6, aes(group = AREA_names,linetype=AREA_names),position=position_dodge(0.1),alpha=0.8)+
+  scale_shape_manual(guide=F, values=c(19,1))+
+  scale_linetype_manual(guide=F, values=c(1,4))+
+  scale_x_discrete(name="",labels=c("No symbols","Fake symbols","Real symbols"))+
+  scale_y_continuous(name = "Trust in Haifa Bay air-pollution policy",breaks = seq(1,7,by=0.5))+
+  ggtitle("Symbols")+
+  coord_cartesian(ylim = c(3.2,4.8))
+
+
+p2 <- SVIVA2_01_comb %>%
+  filter(policy=="TRUST_air_INDEX") %>% 
+ggplot(aes(factor(INFORMATION_weak),trust,shape=factor(AREA_names)))+ 
+  theme_tufte()+
+  #geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.96),
+               width=0.1,size=0.5,position=position_dodge(0.1),color="gray70") + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6,position=position_dodge(0.1))+
+  stat_summary(fun.y = mean, geom = "line", size=0.6, aes(group = AREA_names,linetype=AREA_names),position=position_dodge(0.1),alpha=0.8)+
+  scale_shape_manual(name="Area",values=c(19,1))+
+  scale_linetype_manual(name="Area",values=c(1,4))+
+  scale_x_discrete(name="",labels=c("Strong policy","Weak policy"))+
+  scale_y_continuous(name = "",breaks = seq(1,7,by=0.5))+
+  ggtitle("Information")+
+  coord_cartesian(ylim = c(3.2,4.8))
+
+p4 <- ggarrange(p1,p2,
+          ncol = 2,nrow = 1,
+          widths = c(4,5))
+
+
+ggsave("Figure 3.tiff",p4,dpi=300,height = 3,width = 7)
+```
+
+<font size="0.5">
+
+*Note*: Error bars represent 95% confidence intervals.
+
+</font>
+
+<br><br>
+
+
+
+
+
+## JPART
+
+```{r}
+figure.3 <- ggplot(SVIVA2_01_comb, aes(factor(SYMBOL_n),trust,shape=factor(INFORMATION_n)))+ 
+  theme_classic()+
+  #geom_boxplot(width=0.25,color="gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+               fun.args = list(mult = 1.65),
+               width=0.2,size=0.5,position=position_dodge(0.1),color="gray70") + 
+  stat_summary(fun.y = mean, geom = "point", size=1.6,position=position_dodge(0.1))+
+  stat_summary(fun.y = mean, geom = "line", size=0.6, aes(group = INFORMATION_n,linetype=INFORMATION_n),position=position_dodge(0.1))+
+  scale_shape_manual(guide=F,values=c(19,1))+
+  scale_linetype_manual(name="Information",values=c(1,4),labels=c("Weak policy","Strong policy"))+
+  scale_x_discrete(name="",labels=c("No symbols","Fake symbols","Real symbols"))+
+  scale_y_continuous(name = "Trust in policy",breaks = seq(1,7,by=0.1))
+
+ggsave("Figure 3.tiff",figure.3,dpi=300,height = 3,width = 5)
+```
+
+
+```{r}
+figure.4 <- ggplot(SVIVA2_01, aes(factor(SYMBOL_n), WITHIN_DELTA))+
+  theme_classic()+
+  #geom_boxplot(width=0.25,color = "gray70")+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+                              fun.args = list(mult = 1.65),
+                              width=0.1,size=0.5,color="gray70") + 
+  stat_summary(fun.y = mean, geom = "point", size=2)+
+  stat_summary(fun.y = mean, aes(group = 1), geom = "line", size=0.5)+
+  scale_x_discrete(name="",labels=c("No symbols","Fake symbols","Real symbols"))+
+  scale_y_continuous(name = "Within subject delta", breaks = seq(0,1,by=0.1))
+
+ggsave("Figure 4.tiff",figure.4,dpi=300,height = 3,width = 4)
+```
+
+```{r}
+p1 <- ggplot(SVIVA2_01_comb, aes(factor(SYMBOL_n), ELABORATION_time_log))+
+  theme_classic()+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+                              fun.args = list(mult = 1.65),
+                              width=0.1,size=0.5,color="gray70") + 
+  stat_summary(fun.y = mean, geom = "point", size=1.5)+
+  stat_summary(fun.y = mean, aes(group = 1), geom = "line", size=0.5)+
+  scale_x_discrete(name="",labels=c("no symbols","fake symbols","real symbols"))+
+  scale_y_continuous(name = "Reaction Time (log)")
+
+p2 <- ggplot(SVIVA2_01_comb, aes(factor(SYMBOL_n), MEMORY_score))+
+  theme_classic()+
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar",
+                              fun.args = list(mult = 1.65),
+                              width=0.1,size=0.5,color="gray70") + 
+  stat_summary(fun.y = mean, geom = "point", size=1.5)+
+  stat_summary(fun.y = mean, aes(group = 1), geom = "line", size=0.5)+
+  scale_x_discrete(name="",labels=c("no symbols","fake symbols","real symbols"))+
+  scale_y_continuous(name = "Memory score")
+
+library(ggpubr)
+figure.5 <- ggarrange(p1,p2,
+          ncol = 2,nrow = 1) 
+
+ggsave("Figure 5.tiff",figure.5,dpi=300,height = 3,width = 7)
+```
+
